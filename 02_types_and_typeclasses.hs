@@ -1,4 +1,4 @@
--- Source: http://learnyouahaskell.com/starting-out
+-- Source: http://learnyouahaskell.com/types-and-typeclasses
 
 -- Haskell has a static type system. The type of every expression is known at compile time, which leads to safer code.
 -- Unlike Java or Pascal, Haskell has type inference. If we write a number, we don't have to tell Haskell it's a number. It can infer that on its own.
@@ -15,7 +15,7 @@
 -- :t (2,'a')       ->  (2,'a') :: Num a => (a, Char) -- TODO
 
 -- Explicit types are always denoted with the first letter in capital case.
--- Functions also have types. It is generally considered to be good practice to write out the function types explicitly, except when writing very short functions
+-- Functions also have types. It is generally considered to be good practice to write out the function types explicitly, unless when writing very short functions
 
 
 -- The parameters are separated with -> and there's no special distinction between the parameters and the return type. 
@@ -33,7 +33,7 @@ addThreeInts    x       y       z  = x + y + z
 -- Int      -- whole numbers, bounded, which means that it has a minimum and a maximum value. 
             -- Usually on 32-bit machines the maximum possible Int is 2147483647 and the minimum is -2147483648. 
 
--- Integer  -- The main difference is that it's not bounded so it can be used to represent really really big numbers. 
+-- Integer  -- The main difference to Int is that it's not bounded so it can be used to represent really really big numbers. 
             -- I mean like really big. Int, however, is more efficient.
 
 -- Float    -- is a real floating point with single precision.
@@ -49,12 +49,12 @@ addThreeInts    x       y       z  = x + y + z
 
 ---------------- TYPE VARIABLES ----------------
 -- What do you think is the type of the head function? Because head takes a list of any type and returns the first element, so what could it be? Let's check! 
--- :t head  ->  head :: [a] -> a
+-- :t head        head :: [a] -> a
 
 -- a is not a type since it is not capital. It's actually a type variable. That means that a can be of any type. This is much like generics in other languages,
 -- only in Haskell it's much more powerful because it allows us to easily write very general functions if they don't use any specific behavior of the types in them.
 
--- Functions that have type variables are called polymorphic functions.
+-- Functions that have type variables are called POLYMORPHIC FUNCTIONS.
 -- The type declaration of head states that it takes a list of any type and returns one element of that type.
 
 -- Although type variables can have names longer than one character, we usually give them names of a, b, c, d …
@@ -63,7 +63,7 @@ addThreeInts    x       y       z  = x + y + z
 -- That's why we can use fst on a pair that contains any two types. 
 --      fst :: (a, b) -> a
 
--- Note that just because a and b are different type variables, they DON'T HAVE TO BE different types.
+-- Note that just because a and b are different type variables, they DON'T HAVE TO BE different types. They could also be the same type.
 
 
 ---------------- TYPECLASSES ----------------
@@ -99,17 +99,62 @@ addThreeInts    x       y       z  = x + y + z
 
 -- Show  -- Members of Show can be presented as strings. All types covered so far except for functions are a part of Show. 
          -- The most used function that deals with the Show typeclass is 'show'. It takes a value whose type is a member of Show and presents it to us as a string.
-         -- show (1,2)    ->  "(1,2)"
+s1 = show (1,2)    --  "(1,2)"
 
 -- Read  -- is sort of the opposite typeclass of Show. The read function takes a string and returns a type which is a member of Read. 
-         --     read "True" || False    -> True  
-         --     read "8.2" + 3.8        -> 12.0
-         --     read "5" - 2            -> 3  
-         --     read "[1,2,3,4]" ++ [3] -> [1,2,3,4,3]  
+t1 = read "True" || False       -- True  
+t2 = read "8.2" + 3.8           -- 12.0
+t3 = read "5" - 2               -- 3  
+t4 = read "[1,2,3,4]" ++ [3]    -- [1,2,3,4,3]  
 
          -- But what happens if we try to do just read "4"? What GHCI is telling us here is that it doesn't know what we want in return. Notice that in the previous uses of read we did something with the result afterwards. That way, GHCI could infer what kind of result we wanted out of our read. If we used it as a boolean, it knew it had to return a Bool. But now, it knows we want some type that is part of the Read class, it just doesn't know which one. Let's take a look at the type signature of read.
          -- :t read     read :: (Read a) => String -> a
          -- See? It returns a type that's part of Read but if we don't try to use it in some way later, it has no way of knowing which type. That's why we can use explicit type annotations. Type annotations are a way of explicitly saying what the type of an expression should be. We do that by adding :: at the end of the expression and then specifying a type. 
-         --     read "5" :: Int       5
-         --     read "5" :: Float     5.0
-         --     read "[1,2,3,4]" :: [Int]      [1,2,3,4]
+t5 = read "5" :: Int                -- 5
+t6 = read "5" :: Float              -- 5.0
+t7 = read "[1,2,3,4]" :: [Int]      -- [1,2,3,4]
+t8 = read "[1,2,3,4]" :: [Float]    -- [1.0,2.0,3.0,4.0]
+t9 = read "(3, 'a')" :: (Int, Char) -- (3,'a')
+
+-- Enum  -- Enum members are sequentially ordered types — they can be enumerated. 
+         -- The main advantage of the Enum typeclass is that we can use its types in LIST RANGES. They also have defined successors and predecesors, 
+         -- which you can get with the succ and pred functions.
+         -- Types in this class: (), Bool, Char, Ordering, Int, Integer, Float and Double.
+e1 = [LT .. GT]     -- [LT,EQ,GT]
+e2 = succ False     -- True
+e3 = succ 'B'       -- 'B'
+e4 = succ 10.12345  -- 11.12345
+
+-- Bounded  -- Bounded members have an upper and a lower bound.
+b1 = minBound :: Int    -- -9223372036854775808     (64 bits / 8 bytes in this case?)
+b1 = maxBound :: Char   -- '\1114111'
+
+-- Num      -- Num is a numeric typeclass. Its members have the property of being able to act like numbers. Let's examine the type of a number.
+            -- :t 20        20 :: Num p => p
+            -- It appears that whole numbers are also polymorphic constants. They can act like any type that's a member of the Num typeclass.
+            -- 20 :: Int            20  
+            -- 20 :: Integer        20  
+            -- 20 :: Float          20.0  
+            -- 20 :: Double         20.0  
+            -- Those are types that are in the Num typeclass. 
+            
+            -- If we examine the type of *, we'll see that it accepts ALL NUMBERS.
+            -- :t (*)           (*) :: Num a => a -> a -> a
+            -- It takes two numbers of the ** SAME TYPE ** and returns a number of that type. That's why (5 :: Int) * (6 :: Integer) will result in a type error 
+            -- whereas 5 * (6 :: Integer) will work just fine and produce an Integer because 5 can act like an Integer or an Int. 
+
+            -- To join Num, a type must already be friends with Show and Eq.
+
+-- Integral  -- Integral is also a numeric typeclass. Num includes all numbers, including real numbers and integral numbers, 
+             -- Integral includes only integral (whole) numbers. In this typeclass are Int and Integer.
+
+-- Floating  -- Floating includes only floating point numbers, so Float and Double.
+             -- A very useful function for dealing with numbers is fromIntegral. 
+             -- It has a type declaration of fromIntegral :: (Num b, Integral a) => a -> b. 
+             -- From its type signature we see that it takes an integral number and turns it into a more general number. That's useful when you want integral and floating point types to work together nicely. 
+             -- For instance, the length function has a type declaration of length :: [a] -> Int instead of having a more general type of (Num b) => length :: [a] -> b. I think that's there for historical reasons or something, although in my opinion, it's pretty stupid. Anyway, if we try to get a length of a list and then add it to 3.2, we'll get an error because we tried to add together an Int and a floating point number. So to get around this, we do fromIntegral (length [1,2,3,4]) + 3.2 and it all works out.
+f1 = length [1,2,3,4] + 3.2                         -- error, because length :: [a] -> Int and when we do Int + Float, it does not like it.
+f2 = fromIntegral (length [1,2,3,4]) + 3.2          -- 7.2
+
+            -- Notice that fromIntegral has several class constraints in its type signature. That's completely valid and as you can see, the class constraints are separated by commas inside the parentheses.
+            -- :t fromIntegral          fromIntegral :: (Integral a, Num b) => a -> b
