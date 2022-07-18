@@ -44,10 +44,13 @@ addThreeInts    x       y       z  = x + y + z
 
 -- Char     -- represents a character. It's denoted by single quotes. A list of characters is a string. 
 
+-- String   -- the exact same (?) as [Char]
+
 -- Tuples are types but they are dependent on their length as well as the types of their components, so there is theoretically an infinite number of tuple types, which is too many to cover in this tutorial. Note that the empty tuple () is also a type which can only have a single value: ()
 
 
 ---------------- TYPE VARIABLES ----------------
+
 -- What do you think is the type of the head function? Because head takes a list of any type and returns the first element, so what could it be? Let's check! 
 -- :t head        head :: [a] -> a
 
@@ -79,7 +82,7 @@ addThreeInts    x       y       z  = x + y + z
 
 -- Interesting. We see a new thing here, the => symbol. Everything before the => symbol is called a CLASS CONSTRAINT.
 -- We can read the previous type declaration like this: the equality function takes any two values that are of the same type and returns a Bool. 
--- The type of those two values must be a member of the Eq class (this was the class constraint).
+-- The type of those two values MUST BE A MEMBER OF the Eq class (this was the class constraint).
 
 -- The Eq typeclass provides an interface for testing for equality. Any type where it makes sense to test for equality between two values of that type should be a member of the Eq class. All standard Haskell types except for IO (the type for dealing with input and output) and functions are a part of the Eq typeclass.
 
@@ -101,7 +104,8 @@ addThreeInts    x       y       z  = x + y + z
          -- The most used function that deals with the Show typeclass is 'show'. It takes a value whose type is a member of Show and presents it to us as a string.
 s1 = show (1,2)    --  "(1,2)"
 
--- Read  -- is sort of the opposite typeclass of Show. The read function takes a string and returns a type which is a member of Read. 
+-- Read  -- is sort of the opposite typeclass of Show. The read function takes a string and returns a type which is a member of Read.
+         -- It kind of means that from a given String the type can be created.
 t1 = read "True" || False       -- True  
 t2 = read "8.2" + 3.8           -- 12.0
 t3 = read "5" - 2               -- 3  
